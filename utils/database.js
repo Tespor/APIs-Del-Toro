@@ -1,31 +1,17 @@
 const { Sequelize } = require('sequelize');
 
-class Database {
-    constructor() {
-    }
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: 'database.sqlite3'
+});
 
-    async connect(){
-        this.sequelize = new Sequelize({
-            dialect: 'sqlite',
-            storage: 'db.sqlite3'
-        });
-        try {
-            await this.sequelize.authenticate();
-            console.log('Conexion exitosa.');
-        } catch (error) {
-            console.error('Error en la conexion a la bd:', error);
-        }
-    }
+(async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('Conexión exitosa a la base de datos.');
+  } catch (error) {
+    console.error('Error al conectar a la base de datos:', error);
+  }
+})();
 
-    get getSequelize() {
-        return this.sequelize;
-    }
-}
-
-if(!global.database_singletone) {
-    //Crear la instancia
-    global.database_singletone = new Database();
-    global.database_singletone.connect();
-}
-
-module.exports = global.database_singletone;
+module.exports = sequelize;
