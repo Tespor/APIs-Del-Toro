@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const SECRET_KEY = 'holaMundo';
 
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
@@ -7,7 +8,6 @@ function authenticateToken(req, res, next) {
 
     jwt.verify(token, SECRET_KEY, (err, user) => {
         if (err) return res.status(403).json({ error: 'Token inválido o expirado' });
-        req.alumno = alumno;
         next();
     });
 }

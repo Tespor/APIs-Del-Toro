@@ -29,6 +29,10 @@ Alumno.init(
     telefono: {
       type: DataTypes.INTEGER,
       allowNull: false
+    },
+    password : {
+      type : DataTypes.STRING,
+      allowNull : false
     }
   },
   {

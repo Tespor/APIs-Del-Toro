@@ -13,3 +13,6 @@ app.listen(port, () => {
 const alumnosController = require('./Controllers/alumnos.controller');
 app.use('/alumnos' , alumnosController);
 
+const userController = require('./Controllers/users.controller');
+app.use('/users', userController);
+

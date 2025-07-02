@@ -2,7 +2,10 @@ const express = require('express');
 const Alumno = require('../models/alumno.model');
 const router = express.Router();
 const validateToken = require('../utils/authenticateToken');
-
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const { Op, where } = require('sequelize');
+const SECRET_KEY = 'holaMundo';
 
 
 router.get('/ver', validateToken, async (req, res) => {
@@ -20,20 +23,22 @@ router.get('/ver', validateToken, async (req, res) => {
 });
 
 
-router.post('/ingresar', validateToken, async (req, res) => {
+router.post('/ingresar', validateToken,  async (req, res) => {
 
     const alumno_data = req.body;
 
-    const existe = await Alumno.findOne({ where: { matricula: alumno_data.matricula } })
+    const existe = await Alumno.findOne({ where: { [Op.or]: [{ matricula: alumno_data.matricula }, { correo_electronico: alumno_data.correo_electronico }] } })
     if (existe) {
-        console.log(`EL ALUMNO CON LA MATRICULA : ${alumno_data.matricula} YA EXISTE`);
+        console.log(`LOS DATOS INGRESADOS DEL ALUMNO YA EXISTE`);
         return res.status(409).send({
-            error: `EL ALUMNO CON LA MATRICULA : ${alumno_data.matricula} YA EXISTE`
+            error: `LOS DATOS INGRESADOS DEL ALUMNO YA EXISTE`
 
         });
     }
 
     try {
+        const hash = await bcrypt.hash(alumno_data.password, 10);
+        alumno_data.password = hash;
         await Alumno.create(alumno_data);
         console.log('ALUMNO REGISTRADO CORRECTAMENTE');
 
@@ -64,7 +69,8 @@ router.put('/editar/:matricula', validateToken, async (req, res) => {
                 message: 'EL ALUMNO QUE  DESEA ACTUALIZAR NO EXISTE'
             });
         }
-
+        const hash = await bcrypt.hash(new_data.password, 10);
+        new_data.password = hash;
         await alumno.update(new_data);
         console.log(`EL ESTUDIANTE CON LA MATRICULA : ${matricula} HA SIDO ACTUALIZADO`);
         return res.send({
@@ -108,6 +114,36 @@ router.delete('/eliminar/:matricula', validateToken, async (req, res) => {
         });
 
     }
+});
+
+router.post('/login', async (req, res) => {
+    const { correo_electronico, password } = req.body;
+
+    if (!correo_electronico || !password) {
+        return res.status(400).json({ error: 'Email y contraseña son requeridos' });
+    }
+
+    const alumno = await Alumno.findOne({ where: { correo_electronico } });
+
+    if (!alumno || !(await bcrypt.compare(password, alumno.password))) {
+        return res.status(401).json({ error: 'Credenciales inválidas' });
+    }
+
+    const token = jwt.sign({
+        matricula : alumno.matricula , 
+        nombre : alumno.nombre , 
+        apellidoP : alumno.apellidoP,
+        apellidoM : alumno.apellidoM , 
+        correo_electronico : alumno.correo_electronico ,  
+        telefono : alumno.telefono,
+        password : alumno.password
+    },
+    SECRET_KEY, {expiresIn: '1h'});
+
+    res.json({
+        alumno : alumno,
+        token : token
+    });
 });
 
 
