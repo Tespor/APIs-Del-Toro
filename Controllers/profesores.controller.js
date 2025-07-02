@@ -5,7 +5,7 @@ const validateToken = require('../utils/authenticateToken');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const SECRET_KEY = 'holaMundo';
-
+const verifyPermissions = require('../utils/verifyPermissions');
 
 
 router.get('/ver', validateToken, async (req, res) => {
@@ -23,6 +23,13 @@ router.get('/ver', validateToken, async (req, res) => {
 
 router.post('/ingresar', validateToken, async (req, res) => {
 
+    const permissions = verifyPermissions(req, res);
+    if (permissions != 1100 && permissions != 1110 && permissions != 1101 && permissions != 1111) {
+        return res.send({
+            message: 'NO TIENES PERMISO PARA INGRESAR DATOS'
+        });
+    }
+    
     const profesor_data = req.body;
 
     const existe = await Profesor.findOne({ where: { correo_electronico: profesor_data.correo_electronico } });
@@ -55,6 +62,14 @@ router.post('/ingresar', validateToken, async (req, res) => {
 });
 
 router.put('/editar/:id', validateToken, async (req, res) => {
+    
+    const permissions = verifyPermissions(req, res);
+    if (permissions != 1010 && permissions != 1110 && permissions != 1011 && permissions != 1111) {
+        return res.send({
+            message: 'NO TIENES PERMISO PARA EDITAR DATOS'
+        });
+    }
+    
     const { id } = req.params;
     const new_data = req.body;
 
@@ -85,6 +100,14 @@ router.put('/editar/:id', validateToken, async (req, res) => {
 });
 
 router.delete('/eliminar/:id', validateToken, async (req, res) => {
+    
+    const permissions = verifyPermissions(req, res);
+    if (permissions != 1001 && permissions != 1101 && permissions != 1011 && permissions != 1111) {
+        return res.send({
+            message: 'NO TIENES PERMISO PARA ELIMINAR DATOS'
+        });
+    }
+    
     const { id } = req.params;
 
     try {
@@ -133,7 +156,8 @@ router.post('/login', async (req, res) => {
         apellidoM : profesor.apellidoM,
         correo_electronico : profesor.correo_electronico,
         telefono : profesor.telefono,
-        password : profesor.password
+        password : profesor.password,
+        permissions: profesor.permissions
     },
         SECRET_KEY, { expiresIn: '1h' });
 

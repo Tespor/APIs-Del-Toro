@@ -38,6 +38,10 @@ Profesor.init(
         password: {
             type: DataTypes.STRING,
             allowNull: false
+        },
+        permissions: {
+            type: DataTypes.INTEGER,
+            allowNull: false
         }
     },
     {

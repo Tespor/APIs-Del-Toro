@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { Op, where } = require('sequelize');
 const SECRET_KEY = 'holaMundo';
+const verifyPermissions = require('../utils/verifyPermissions');
 
 
 router.get('/ver', validateToken, async (req, res) => {
@@ -24,6 +25,13 @@ router.get('/ver', validateToken, async (req, res) => {
 
 
 router.post('/ingresar', validateToken,  async (req, res) => {
+
+    const permissions = verifyPermissions(req, res);
+    if (permissions != 1100 && permissions != 1110 && permissions != 1101 && permissions != 1111) {
+        return res.send({
+            message: 'NO TIENES PERMISO PARA INGRESAR DATOS'
+        });
+    }
 
     const alumno_data = req.body;
 
@@ -57,6 +65,14 @@ router.post('/ingresar', validateToken,  async (req, res) => {
 });
 
 router.put('/editar/:matricula', validateToken, async (req, res) => {
+
+    const permissions = verifyPermissions(req, res);
+    if (permissions != 1010 && permissions != 1110 && permissions != 1011 && permissions != 1111) {
+        return res.send({
+            message: 'NO TIENES PERMISO PARA EDITAR DATOS'
+        });
+    }
+
     const { matricula } = req.params;
     const new_data = req.body;
 
@@ -87,6 +103,14 @@ router.put('/editar/:matricula', validateToken, async (req, res) => {
 });
 
 router.delete('/eliminar/:matricula', validateToken, async (req, res) => {
+    
+    const permissions = verifyPermissions(req, res);
+    if (permissions != 1001 && permissions != 1101 && permissions != 1011 && permissions != 1111) {
+        return res.send({
+            message: 'NO TIENES PERMISO PARA ELIMINAR DATOS'
+        });
+    }
+    
     const { matricula } = req.params;
 
     try {
@@ -136,7 +160,8 @@ router.post('/login', async (req, res) => {
         apellidoM : alumno.apellidoM , 
         correo_electronico : alumno.correo_electronico ,  
         telefono : alumno.telefono,
-        password : alumno.password
+        password : alumno.password,
+        permissions: alumno.permissions
     },
     SECRET_KEY, {expiresIn: '1h'});
 

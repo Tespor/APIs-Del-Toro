@@ -1,7 +1,7 @@
 const { DataTypes, Model } = require('sequelize');
-const sequelize = require('../utils/database'); 
+const sequelize = require('../utils/database');
 
-class Alumno extends Model {}
+class Alumno extends Model { }
 
 Alumno.init(
   {
@@ -30,15 +30,19 @@ Alumno.init(
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    password : {
-      type : DataTypes.STRING,
-      allowNull : false
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    permissions: {
+      type: DataTypes.INTEGER,
+      allowNull: false
     }
   },
   {
-    sequelize: sequelize, 
+    sequelize: sequelize,
     modelName: 'Alumno',
-    tableName: 'alumnos', 
+    tableName: 'alumnos',
     timestamps: false
   }
 );

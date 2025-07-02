@@ -2,23 +2,32 @@ const express = require('express');
 const Alumno = require('../models/curso.model');
 const router = express.Router();
 const validateToken = require('../utils/authenticateToken');
+const verifyPermissions = require('../utils/verifyPermissions');
+
 
 router.get('/ver', validateToken, async (req, res) => {
-    try {
-        const alumnos = await Alumno.findAll();
-        res.send(alumnos);
-    }
-    catch (error) {
-        console.log(error);
-        return res.status(400).send({
-            message: error
-        });
-    }
+  try {
+    const alumnos = await Alumno.findAll();
+    res.send(alumnos);
+  }
+  catch (error) {
+    console.log(error);
+    return res.status(400).send({
+      message: error
+    });
+  }
 });
 
-router.post('/ingresar', validateToken , async (req, res) => {
+router.post('/ingresar', validateToken, async (req, res) => {
 
- try {
+  const permissions = verifyPermissions(req, res);
+  if (permissions != 1100 && permissions != 1110 && permissions != 1101 && permissions != 1111) {
+    return res.send({
+      message: 'NO TIENES PERMISO PARA INGRESAR DATOS'
+    });
+  }
+
+  try {
     const { nombre_curso, profesor_id } = req.body;
 
     if (!nombre_curso || !profesor_id) {
@@ -38,8 +47,15 @@ router.post('/ingresar', validateToken , async (req, res) => {
 });
 
 router.put('/editar/:id', validateToken, async (req, res) => {
-   
-try {
+
+  const permissions = verifyPermissions(req, res);
+  if (permissions != 1010 && permissions != 1110 && permissions != 1011 && permissions != 1111) {
+    return res.send({
+      message: 'NO TIENES PERMISO PARA EDITAR DATOS'
+    });
+  }
+
+  try {
     const cursoId = req.params.id;
     const { nombre_curso, profesor_id } = req.body;
 
@@ -64,7 +80,17 @@ try {
 
 
 router.delete('/eliminar/:id', validateToken, async (req, res) => {
-   try {
+
+
+  const permissions = verifyPermissions(req, res);
+  if (permissions != 1001 && permissions != 1101 && permissions != 1011 && permissions != 1111) {
+    return res.send({
+      message: 'NO TIENES PERMISO PARA ELIMINAR DATOS'
+    });
+  }
+
+
+  try {
     const cursoId = req.params.id;
 
     const curso = await Curso.findByPk(cursoId);

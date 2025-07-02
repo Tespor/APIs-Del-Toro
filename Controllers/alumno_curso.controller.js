@@ -2,10 +2,7 @@ const express = require('express');
 const Alumno_Curso = require('../models/alumno_curso.model');
 const router = express.Router();
 const validateToken = require('../utils/authenticateToken');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const { Op, where } = require('sequelize');
-const SECRET_KEY = 'holaMundo';
+const verifyPermissions = require('../utils/verifyPermissions');
 
 
 router.get('/ver', validateToken, async (req, res) => {
@@ -23,6 +20,14 @@ router.get('/ver', validateToken, async (req, res) => {
 });
 
 router.post('/ingresar', validateToken, async (req, res) => {
+
+    const permissions = verifyPermissions(req, res);
+    if (permissions != 1100 && permissions != 1110 && permissions != 1101 && permissions != 1111) {
+        return res.send({
+            message: 'NO TIENES PERMISO PARA INGRESAR DATOS'
+        });
+    }
+
     const curso_data = req.body;
 
     try {
@@ -42,6 +47,14 @@ router.post('/ingresar', validateToken, async (req, res) => {
 });
 
 router.put('/editar/:id', validateToken, async (req, res) => {
+
+    const permissions = verifyPermissions(req, res);
+    if (permissions != 1010 && permissions != 1110 && permissions != 1011 && permissions != 1111) {
+        return res.send({
+            message: 'NO TIENES PERMISO PARA EDITAR DATOS'
+        });
+    }
+
     const { id } = req.params;
     const new_data = req.body;
 
@@ -69,6 +82,14 @@ router.put('/editar/:id', validateToken, async (req, res) => {
 });
 
 router.delete('/eliminar/:id', validateToken, async (req, res) => {
+
+    const permissions = verifyPermissions(req, res);
+    if (permissions != 1001 && permissions != 1101 && permissions != 1011 && permissions != 1111) {
+        return res.send({
+            message: 'NO TIENES PERMISO PARA ELIMINAR DATOS'
+        });
+    }
+
     const { id } = req.params;
 
     try {
