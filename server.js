@@ -16,3 +16,6 @@ app.use('/alumnos' , alumnosController);
 const profesoresController =require('./Controllers/profesores.controller');
 app.use('/profesores' , profesoresController);
 
+
+const cursoController = require('./Controllers/curso.controller');
+app.use('/cursos' , cursoController);
