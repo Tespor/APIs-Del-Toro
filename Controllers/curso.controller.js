@@ -1,7 +1,6 @@
 const express = require('express');
 const Alumno = require('../models/curso.model');
 const router = express.Router();
-
 const validateToken = require('../utils/authenticateToken');
 
 router.get('cursos/ver', validateToken, async (req, res) => {

@@ -1,15 +1,14 @@
-const {DataTypes, model, INTEGER} = require ('sequelize');
-const sequelize = require ('../utils/database');
-const { timestamp } = require('rxjs');
+const { DataTypes, Model } = require('sequelize');
+const sequelize = require('../utils/database');
 
-class Profesor extends model{}
+class Profesor extends Model { }
 
 Profesor.init(
     {
-        id : {
+        id: {
             type: DataTypes.INTEGER,
-            primarykey: true,
-            allowNull: false
+            primaryKey: true,
+            allowNull: true
         },
 
         nombre: {
@@ -17,28 +16,32 @@ Profesor.init(
             allowNull: false
         },
 
-        apellidoP : {
+        apellidoP: {
             type: DataTypes.STRING,
             allowNull: false
         },
 
         apellidoM: {
-            type : DataTypes.STRING,
-            allowNull: false
-        },
-
-        correo_electronico : {
             type: DataTypes.STRING,
             allowNull: false
         },
 
-        telefono : {
-            type : Datatypes.STRING,
-            allowNull: false 
+        correo_electronico: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+
+        telefono: {
+            type: DataTypes.INTEGER,
+            allowNull: false
+        },
+        password: {
+            type: DataTypes.STRING,
+            allowNull: false
         }
     },
     {
-        sequelize, 
+        sequelize,
         modelName: 'Profesor',
         tableName: 'profesores',
         timestamps: false

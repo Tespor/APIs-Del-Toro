@@ -1,31 +1,33 @@
 const { DataTypes, Model } = require('sequelize');
-const sequelize = require('../utils/database'); 
+const sequelize = require('../utils/database');
+const Profesor = require('../models/profesor.model');
 
-class Curso extends Model {}
+class Curso extends Model { }
 
 Curso.init(
   {
-    id:{
+    id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
+      allowNull: true
+    },
+    nombre_curso: {
+      type: DataTypes.STRING,
       allowNull: false
     },
-    nombre_curso:{
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    profesor_id:{
-        type: DataTypes.INTEGER,
-        references:{
-            model:profesores,
-            key: id
-        }
+    profesor_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Profesor,
+        key: Profesor.id
+      }
     }
   },
   {
-    sequelize: sequelize, 
+    sequelize: sequelize,
     modelName: 'Curso',
-    tableName: 'cursos', 
+    tableName: 'cursos',
     timestamps: false
   }
 );
