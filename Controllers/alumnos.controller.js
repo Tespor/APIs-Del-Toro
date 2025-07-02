@@ -67,7 +67,7 @@ router.put('/editar/:matricula', validateToken, async (req, res) => {
 
         await alumno.update(new_data);
         console.log(`EL ESTUDIANTE CON LA MATRICULA : ${matricula} HA SIDO ACTUALIZADO`);
-         return res.send({
+        return res.send({
             message: `ALUMNO CON LA MATRICULA : ${matricula} HA SIDO ACTUALIZADO`,
             alumno
         });
@@ -80,7 +80,35 @@ router.put('/editar/:matricula', validateToken, async (req, res) => {
 
 });
 
+router.delete('/eliminar/:matricula', validateToken, async (req, res) => {
+    const { matricula } = req.params;
 
+    try {
+        const existe = await Alumno.findOne({ where: { matricula: matricula } });
+
+        if (!existe) {
+            console.log('EL ALUMNO QUE DESEA ELIMINAR NO EXISTE');
+            return res.status(404).send({
+                message: 'EL ALUMNO QUE DESEA ELIMINAR NO EXISTE'
+            });
+        }
+
+        await existe.destroy();
+        console.log(`ALUMNO CON LA MATRICULA: ${matricula} HA SIDO ELIMINADO`);
+
+        return res.send({
+            message: `ALUMNO CON LA MATRICULA: ${matricula} HA SIDO ELIMINADO`
+        });
+    }
+    catch (error) {
+        console.log('HA OCURRIDO UN ERROR AL ELIMINAR EL ALUMNO', error);
+        return res.status(500).send({
+            message: 'HA OCURRIDO UN ERROR AL ELIMINAR EL ALUMNO',
+            error: error.message
+        });
+
+    }
+});
 
 
 module.exports = router;
