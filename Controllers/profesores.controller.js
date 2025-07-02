@@ -8,7 +8,7 @@ const SECRET_KEY = 'holaMundo';
 
 
 
-router.get('ver', validateToken, async (req, res) => {
+router.get('/ver', validateToken, async (req, res) => {
     try {
         const profesores = await Profesor.findAll();
         res.send(profesores);
@@ -21,7 +21,7 @@ router.get('ver', validateToken, async (req, res) => {
     }
 });
 
-router.post('ingresar', validateToken, async (req, res) => {
+router.post('/ingresar', validateToken, async (req, res) => {
 
     const profesor_data = req.body;
 

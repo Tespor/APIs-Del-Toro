@@ -3,7 +3,7 @@ const Alumno = require('../models/curso.model');
 const router = express.Router();
 const validateToken = require('../utils/authenticateToken');
 
-router.get('cursos/ver', validateToken, async (req, res) => {
+router.get('/ver', validateToken, async (req, res) => {
     try {
         const alumnos = await Alumno.findAll();
         res.send(alumnos);
@@ -16,7 +16,7 @@ router.get('cursos/ver', validateToken, async (req, res) => {
     }
 });
 
-router.post('cursos/ingresar', validateToken , async (req, res) => {
+router.post('/ingresar', validateToken , async (req, res) => {
 
  try {
     const { nombre_curso, profesor_id } = req.body;
@@ -37,7 +37,7 @@ router.post('cursos/ingresar', validateToken , async (req, res) => {
   }
 });
 
-router.put('cursos/editar/id', validateToken, async (req, res) => {
+router.put('/editar/:id', validateToken, async (req, res) => {
    
 try {
     const cursoId = req.params.id;
@@ -63,7 +63,7 @@ try {
 
 
 
-router.delete('cursos/eliminar/id', validateToken, async (req, res) => {
+router.delete('/eliminar/:id', validateToken, async (req, res) => {
    try {
     const cursoId = req.params.id;
 
