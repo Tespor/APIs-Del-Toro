@@ -3,6 +3,41 @@ const Alumno_Curso = require('../models/alumno_curso.model');
 const router = express.Router();
 const validateToken = require('../utils/authenticateToken');
 const verifyPermissions = require('../utils/verifyPermissions');
+const { Op, where } = require('sequelize');
+
+router.get('/buscar/:palabra', validateToken, async (req, res) => {
+    const { palabra } = req.params;
+
+    if(!palabra){
+        console.log('EL CAMPO ES REQUERIDO');
+        return res.status(400).send({
+            message : 'EL CAMPO ES REQUERIDO'
+        })
+    }
+
+    try {
+        const curso = await Alumno_Curso.findOne({
+            where: {
+                matricula: {
+                    [Op.like]: `${palabra}%`
+                }
+            }
+        });
+
+        if(!curso){
+            console.log('NO SE ENCONTRO EL DATO');
+            return res.status(400).send({
+                message : 'NO SE ENCONTRO EL DATO'
+            });
+        }
+
+        res.send({curso});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(400).send(error);
+    }
+});
 
 
 router.get('/ver', validateToken, async (req, res) => {

@@ -4,10 +4,44 @@ const router = express.Router();
 const validateToken = require('../utils/authenticateToken');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { Op, where } = require('sequelize');
+const { Op} = require('sequelize');
 const SECRET_KEY = 'holaMundo';
 const verifyPermissions = require('../utils/verifyPermissions');
 
+
+router.get('/buscar/:palabra', validateToken, async (req, res) => {
+    const { palabra } = req.params;
+
+    if(!palabra){
+        console.log('EL CAMPO ES REQUERIDO');
+        return res.status(400).send({
+            message : 'EL CAMPO ES REQUERIDO'
+        })
+    }
+
+    try {
+        const alumno = await Alumno.findOne({
+            where: {
+                nombre: {
+                    [Op.like]: `${palabra}%`
+                }
+            }
+        });
+
+        if(!alumno){
+            console.log('NO SE ENCONTRO EL DATO');
+            return res.status(400).send({
+                message : 'NO SE ENCONTRO EL DATO'
+            });
+        }
+
+        res.send({alumno});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(400).send(error);
+    }
+});
 
 router.get('/ver', validateToken, async (req, res) => {
     try {

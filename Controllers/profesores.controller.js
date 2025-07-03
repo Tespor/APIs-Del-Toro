@@ -6,7 +6,41 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const SECRET_KEY = 'holaMundo';
 const verifyPermissions = require('../utils/verifyPermissions');
+const { Op} = require('sequelize');
 
+router.get('/buscar/:palabra', validateToken, async (req, res) => {
+    const { palabra } = req.params;
+
+    if(!palabra){
+        console.log('EL CAMPO ES REQUERIDO');
+        return res.status(400).send({
+            message : 'EL CAMPO ES REQUERIDO'
+        })
+    }
+
+    try {
+        const profesor = await Profesor.findOne({
+            where: {
+                nombre: {
+                    [Op.like]: `${palabra}%`
+                }
+            }
+        });
+
+        if(!profesor){
+            console.log('NO SE ENCONTRO EL DATO');
+            return res.status(400).send({
+                message : 'NO SE ENCONTRO EL DATO'
+            });
+        }
+
+        res.send({profesor});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(400).send(error);
+    }
+});
 
 router.get('/ver', validateToken, async (req, res) => {
     try {

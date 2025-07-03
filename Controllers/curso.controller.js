@@ -1,14 +1,49 @@
 const express = require('express');
-const Alumno = require('../models/curso.model');
+const Curso = require('../models/curso.model');
 const router = express.Router();
 const validateToken = require('../utils/authenticateToken');
 const verifyPermissions = require('../utils/verifyPermissions');
+const { Op} = require('sequelize');
+
+router.get('/buscar/:palabra', validateToken, async (req, res) => {
+    const { palabra } = req.params;
+
+    if(!palabra){
+        console.log('EL CAMPO ES REQUERIDO');
+        return res.status(400).send({
+            message : 'EL CAMPO ES REQUERIDO'
+        })
+    }
+
+    try {
+        const curso = await Curso.findOne({
+            where: {
+                nombre_curso: {
+                    [Op.like]: `${palabra}%`
+                }
+            }
+        });
+
+        if(!curso){
+            console.log('NO SE ENCONTRO EL DATO');
+            return res.status(400).send({
+                message : 'NO SE ENCONTRO EL DATO'
+            });
+        }
+
+        res.send({curso});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(400).send(error);
+    }
+});
 
 
 router.get('/ver', validateToken, async (req, res) => {
   try {
-    const alumnos = await Alumno.findAll();
-    res.send(alumnos);
+    const Cursos = await Curso.findAll();
+    res.send(Cursos);
   }
   catch (error) {
     console.log(error);
