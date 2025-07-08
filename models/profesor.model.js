@@ -35,14 +35,7 @@ Profesor.init(
             type: DataTypes.INTEGER,
             allowNull: false
         },
-        password: {
-            type: DataTypes.STRING,
-            allowNull: false
-        },
-        permissions: {
-            type: DataTypes.INTEGER,
-            allowNull: false
-        }
+
     },
     {
         sequelize,

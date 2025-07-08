@@ -6,15 +6,15 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const SECRET_KEY = 'holaMundo';
 const verifyPermissions = require('../utils/verifyPermissions');
-const { Op} = require('sequelize');
+const { Op } = require('sequelize');
 
 router.get('/buscar/:palabra', validateToken, async (req, res) => {
     const { palabra } = req.params;
 
-    if(!palabra){
+    if (!palabra) {
         console.log('EL CAMPO ES REQUERIDO');
         return res.status(400).send({
-            message : 'EL CAMPO ES REQUERIDO'
+            message: 'EL CAMPO ES REQUERIDO'
         })
     }
 
@@ -27,14 +27,14 @@ router.get('/buscar/:palabra', validateToken, async (req, res) => {
             }
         });
 
-        if(!user){
+        if (!user) {
             console.log('NO SE ENCONTRO EL DATO');
             return res.status(400).send({
-                message : 'NO SE ENCONTRO EL DATO'
+                message: 'NO SE ENCONTRO EL DATO'
             });
         }
 
-        res.send({user});
+        res.send({ user });
     }
     catch (error) {
         console.log(error);
@@ -56,13 +56,14 @@ router.get('/ver', validateToken, async (req, res) => {
 });
 
 router.post('/ingresar', validateToken, async (req, res) => {
-
+    
     const permissions = verifyPermissions(req, res);
     if (permissions != 1100 && permissions != 1110 && permissions != 1101 && permissions != 1111) {
         return res.send({
             message: 'NO TIENES PERMISO PARA INGRESAR DATOS'
         });
     }
+
 
 
     const user_data = req.body;

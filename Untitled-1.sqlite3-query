@@ -1,0 +1,14 @@
+-- database: ./database.sqlite3
+
+SELECT * FROM alumnos;
+INSERT INTO profesores (id, nombre, apellidoP, apellidoM, correo_electronico, telefono) VALUES
+(1, 'Erik', 'Hernández', 'Ayala', 'erik.hernandez@example.com', '5551001001'),
+(2, 'Laura', 'García', 'Lopez', 'laura.garcia@example.com', '5551001002'),
+(3, 'Carlos', 'Ramírez', 'Torres', 'carlos.ramirez@example.com', '5551001003'),
+(4, 'Ana', 'Martínez', 'Gómez', 'ana.martinez@example.com', '5551001004'),
+(5, 'Miguel', 'Sánchez', 'Reyes', 'miguel.sanchez@example.com', '5551001005'),
+(6, 'Lucía', 'Morales', 'Cruz', 'lucia.morales@example.com', '5551001006'),
+(7, 'Jorge', 'Vargas', 'Jiménez', 'jorge.vargas@example.com', '5551001007'),
+(8, 'Elena', 'Fernández', 'Ortiz', 'elena.fernandez@example.com', '5551001008'),
+(9, 'Diego', 'Ruiz', 'Castillo', 'diego.ruiz@example.com', '5551001009'),
+(10, 'María', 'Díaz', 'Ramos', 'maria.diaz@example.com', '5551001010');
