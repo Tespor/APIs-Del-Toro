@@ -69,7 +69,8 @@ router.post('/ingresar', validateToken,  async (req, res) => {
 
     const alumno_data = req.body;
 
-    const existe = await Alumno.findOne({ where: { [Op.or]: [{ matricula: alumno_data.matricula }, { correo_electronico: alumno_data.correo_electronico }] } })
+    //const existe = await Alumno.findOne({ where: { [Op.or]: [{ matricula: alumno_data.matricula }, { correo_electronico: alumno_data.correo_electronico }] } })
+    const existe = await Alumno.findOne({ where: { [Op.or]: [{ correo_electronico: alumno_data.correo_electronico }] } })
     if (existe) {
         console.log(`LOS DATOS INGRESADOS DEL ALUMNO YA EXISTE`);
         return res.status(409).send({
@@ -79,8 +80,6 @@ router.post('/ingresar', validateToken,  async (req, res) => {
     }
 
     try {
-        const hash = await bcrypt.hash(alumno_data.password, 10);
-        alumno_data.password = hash;
         await Alumno.create(alumno_data);
         console.log('ALUMNO REGISTRADO CORRECTAMENTE');
 
@@ -92,7 +91,6 @@ router.post('/ingresar', validateToken,  async (req, res) => {
     } catch (error) {
         console.log('OCURRIO UN ERROR AL REGISTRAR UN ALUMNO', error);
         return res.status(400).send(error);
-
     }
 
 

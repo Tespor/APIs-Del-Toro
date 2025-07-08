@@ -8,7 +8,7 @@ Alumno.init(
     matricula: {
       type: DataTypes.INTEGER,
       primaryKey: true,
-      allowNull: false
+      allowNull: true
     },
     nombre: {
       type: DataTypes.STRING,
