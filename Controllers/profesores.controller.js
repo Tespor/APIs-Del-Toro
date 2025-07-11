@@ -14,7 +14,7 @@ router.get('/buscar/:palabra', validateToken, async (req, res) => {
     if(!palabra){
         console.log('EL CAMPO ES REQUERIDO');
         return res.status(400).send({
-            message : 'EL CAMPO ES REQUERIDO'
+            error : 'EL CAMPO ES REQUERIDO'
         })
     }
 
@@ -30,7 +30,7 @@ router.get('/buscar/:palabra', validateToken, async (req, res) => {
         if(!profesor){
             console.log('NO SE ENCONTRO EL DATO');
             return res.status(400).send({
-                message : 'NO SE ENCONTRO EL DATO'
+                error : 'NO SE ENCONTRO EL DATO'
             });
         }
 
@@ -50,7 +50,7 @@ router.get('/ver', validateToken, async (req, res) => {
     catch (error) {
         console.log(error);
         return res.status(400).send({
-            message: error
+            error: error
         });
     }
 });
@@ -60,7 +60,7 @@ router.post('/ingresar', validateToken, async (req, res) => {
     const permissions = verifyPermissions(req, res);
     if (permissions != 1100 && permissions != 1110 && permissions != 1101 && permissions != 1111) {
         return res.send({
-            message: 'NO TIENES PERMISO PARA INGRESAR DATOS'
+            error: 'NO TIENES PERMISO PARA INGRESAR DATOS'
         });
     }
     
@@ -71,24 +71,20 @@ router.post('/ingresar', validateToken, async (req, res) => {
         console.log(`EL PROFESOR CON EL EMAIL : ${profesor_data.correo_electronico} YA EXISTE`);
         return res.status(409).send({
             error: `EL PROFESOR CON EL EMAIL : ${profesor_data.correo_electronico} YA EXISTE`
-
         });
-
     }
 
     try {
-        const hash = await bcrypt.hash(profesor_data.password, 10);
-        profesor_data.password = hash;
         await Profesor.create(profesor_data);
         console.log('PROFESOR REGISTRADO CORRECTAMENTE');
 
         res.send({
-            message: 'PROFESOR CREADO CORRECTAMENTE',
+            error: 'PROFESOR CREADO CORRECTAMENTE',
             profesor: profesor_data
         })
 
     } catch (error) {
-        console.log('HA OCURRIDO UN ERROR AL REGISTRAR AL USUARIO', error);
+        console.log('HA OCURRIDO UN ERROR AL REGISTRAR AL USUARIO:', error);
         return res.status(400).send(error);
 
     }
@@ -100,7 +96,7 @@ router.put('/editar/:id', validateToken, async (req, res) => {
     const permissions = verifyPermissions(req, res);
     if (permissions != 1010 && permissions != 1110 && permissions != 1011 && permissions != 1111) {
         return res.send({
-            message: 'NO TIENES PERMISO PARA EDITAR DATOS'
+            error: 'NO TIENES PERMISO PARA EDITAR DATOS'
         });
     }
     
@@ -113,7 +109,7 @@ router.put('/editar/:id', validateToken, async (req, res) => {
         if (!profesor) {
             console.log('EL PROFESOR QUE DESEA ACTUALIZAR NO EXISTE');
             return res.status(404).send({
-                message: 'EL PROFESOR QUE DESEA ACTUALIZAR NO EXISTE'
+                error: 'EL PROFESOR QUE DESEA ACTUALIZAR NO EXISTE'
             });
         }
         const hash = await bcrypt.hash(new_data.password, 10);
@@ -121,7 +117,7 @@ router.put('/editar/:id', validateToken, async (req, res) => {
         await profesor.update(new_data);
         console.log(`EL PROFESOR CON EL ID ${id} HA SIDO ACTUALIZADO`);
         return res.send({
-            message: `PROFESOR CON EL ID : ${id} HA SIDO ACTUALIZADO`,
+            error: `PROFESOR CON EL ID : ${id} HA SIDO ACTUALIZADO`,
             profesor
         });
 
@@ -137,8 +133,9 @@ router.delete('/eliminar/:id', validateToken, async (req, res) => {
     
     const permissions = verifyPermissions(req, res);
     if (permissions != 1001 && permissions != 1101 && permissions != 1011 && permissions != 1111) {
-        return res.send({
-            message: 'NO TIENES PERMISO PARA ELIMINAR DATOS'
+        console.log('entro al if');
+        return res.status(409).send({
+            error: 'NO TIENES PERMISO PARA ELIMINAR DATOS'
         });
     }
     
@@ -150,22 +147,21 @@ router.delete('/eliminar/:id', validateToken, async (req, res) => {
         if (!existe) {
             console.log('EL PROFESOR QUE SE DESEA ELIMINAR NO EXISTE');
             return res.status(404).send({
-                message: 'EL PROFESOR QUE DESEA ELIMINAR NO EXISTE'
+                error: 'EL PROFESOR QUE DESEA ELIMINAR NO EXISTE'
             });
         }
         await existe.destroy();
         console.log(`PROFESOR CON EL ID : ${id} HA SIDO ELIMINADO `);
 
         return res.send({
-            message: `PROFESOR CON EL ID ${id} HA SIDO ELIMINADO`
+            error: `PROFESOR CON EL ID ${id} HA SIDO ELIMINADO`
         });
 
     }
     catch (error) {
         console.log('HA OCURRIDO UN ERROR AL ELIMINAR AL PROFESOR');
         return res.status(500).send({
-            message: 'HA OCURRIDO UN ERROR AL ELIMINAR AL ALUMNO ',
-            error: error.message
+            error: 'HA OCURRIDO UN ERROR AL ELIMINAR AL ALUMNO ' + error
         });
     }
 });

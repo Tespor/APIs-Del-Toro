@@ -1,57 +1,104 @@
 const express = require('express');
 const Curso = require('../models/curso.model');
+const Profesor = require('../models/profesor.model');
+const Alumno = require('../models/alumno.model');
 const router = express.Router();
 const validateToken = require('../utils/authenticateToken');
 const verifyPermissions = require('../utils/verifyPermissions');
-const { Op} = require('sequelize');
-
-router.get('/buscar/:palabra', validateToken, async (req, res) => {
-    const { palabra } = req.params;
-
-    if(!palabra){
-        console.log('EL CAMPO ES REQUERIDO');
-        return res.status(400).send({
-            message : 'EL CAMPO ES REQUERIDO'
-        })
-    }
-
-    try {
-        const curso = await Curso.findOne({
-            where: {
-                nombre_curso: {
-                    [Op.like]: `${palabra}%`
-                }
-            }
-        });
-
-        if(!curso){
-            console.log('NO SE ENCONTRO EL DATO');
-            return res.status(400).send({
-                message : 'NO SE ENCONTRO EL DATO'
-            });
-        }
-
-        res.send({curso});
-    }
-    catch (error) {
-        console.log(error);
-        return res.status(400).send(error);
-    }
-});
+const { QueryTypes, Op } = require('sequelize');
+const sequelize = require('../utils/database')
 
 
 router.get('/ver', validateToken, async (req, res) => {
   try {
-    const Cursos = await Curso.findAll();
-    res.send(Cursos);
+    const cursos = await sequelize.query(`
+      SELECT cursos.*, profesores.nombre AS nombre_profesor
+      FROM cursos
+      INNER JOIN profesores ON cursos.profesor_id = profesores.id
+      `, {
+      type: QueryTypes.SELECT
+    });
+
+    console.log(cursos);
+    res.send(cursos);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).send({ message: error.message });
+  }
+});
+
+router.get('/cursos/:id/alumnos', validateToken, async (req, res) => {
+  const cursoId = req.params.id;
+
+  try {
+    const curso = await Curso.findByPk(cursoId, {
+      include: {
+        model: Alumno,
+        through: { attributes: [] }, // no mostrar tabla intermedia
+        attributes: ['matricula', 'nombre', 'apellidoP', 'apellidoM']
+      }
+    });
+
+    if (!curso) {
+      return res.status(404).send({ message: 'Curso no encontrado' });
+    }
+
+    res.send(curso.Alumnos);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).send({ message: error.message });
+  }
+});
+
+
+
+router.get('/buscar/:palabra', validateToken, async (req, res) => {
+  const { palabra } = req.params;
+
+  if (!palabra) {
+    console.log('EL CAMPO ES REQUERIDO');
+    return res.status(400).send({
+      message: 'EL CAMPO ES REQUERIDO'
+    })
+  }
+
+  try {
+    const curso = await Curso.findOne({
+      where: {
+        nombre_curso: {
+          [Op.like]: `${palabra}%`
+        }
+      }
+    });
+
+    if (!curso) {
+      console.log('NO SE ENCONTRO EL DATO');
+      return res.status(400).send({
+        message: 'NO SE ENCONTRO EL DATO'
+      });
+    }
+
+    res.send({ curso });
   }
   catch (error) {
     console.log(error);
-    return res.status(400).send({
-      message: error
-    });
+    return res.status(400).send(error);
   }
 });
+
+
+// router.get('/ver', validateToken, async (req, res) => {
+//   try {
+//     const Cursos = await Curso.findAll();
+//     res.send(Cursos);
+//   }
+//   catch (error) {
+//     console.log(error);
+//     return res.status(400).send({
+//       message: error
+//     });
+//   }
+// });
 
 router.post('/ingresar', validateToken, async (req, res) => {
 
@@ -69,6 +116,31 @@ router.post('/ingresar', validateToken, async (req, res) => {
       return res.status(400).json({ error: 'Faltan datos requeridos' });
     }
 
+    const existe = await Curso.findOne({
+      where: {
+        [Op.and]: [{
+          nombre_curso: nombre_curso,
+          profesor_id: profesor_id
+        }]
+      }
+    })
+
+    const existeProfe = await Profesor.findOne({
+      where: { id: profesor_id }
+    })
+
+    if(!existeProfe){
+      return res.status(400).send({
+        error: `No existe ese profesor`
+      })
+    }
+
+    if(existe){
+      return res.status(400).send({
+        error: `Ya existe el curso: ${nombre_curso} al profesor que deseas asignar`
+      })
+    }
+
     const nuevoCurso = await Curso.create({
       nombre_curso,
       profesor_id
@@ -77,7 +149,7 @@ router.post('/ingresar', validateToken, async (req, res) => {
     res.status(201).json(nuevoCurso);
   } catch (error) {
     console.error('Error al ingresar curso:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).send({ error: `Error del servidor ${error.message}` });
   }
 });
 

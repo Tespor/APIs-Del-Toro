@@ -75,7 +75,6 @@ router.post('/ingresar', validateToken,  async (req, res) => {
         console.log(`LOS DATOS INGRESADOS DEL ALUMNO YA EXISTE`);
         return res.status(409).send({
             error: `LOS DATOS INGRESADOS DEL ALUMNO YA EXISTE`
-
         });
     }
 
