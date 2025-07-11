@@ -7,6 +7,7 @@ const bcrypt = require('bcryptjs');
 const { Op} = require('sequelize');
 const SECRET_KEY = 'holaMundo';
 const verifyPermissions = require('../utils/verifyPermissions');
+const Alumno_Curso = require('../models/alumno_curso.model');
 
 
 router.get('/buscar/:palabra', validateToken, async (req, res) => {
@@ -116,8 +117,6 @@ router.put('/editar/:matricula', validateToken, async (req, res) => {
                 message: 'EL ALUMNO QUE  DESEA ACTUALIZAR NO EXISTE'
             });
         }
-        const hash = await bcrypt.hash(new_data.password, 10);
-        new_data.password = hash;
         await alumno.update(new_data);
         console.log(`EL ESTUDIANTE CON LA MATRICULA : ${matricula} HA SIDO ACTUALIZADO`);
         return res.send({
@@ -152,6 +151,12 @@ router.delete('/eliminar/:matricula', validateToken, async (req, res) => {
             return res.status(404).send({
                 message: 'EL ALUMNO QUE DESEA ELIMINAR NO EXISTE'
             });
+        }
+
+        const existe_en_curso = await Alumno_Curso.findOne({where : {matricula : matricula}});
+
+        if(existe_en_curso){
+            await existe_en_curso.destroy();
         }
 
         await existe.destroy();

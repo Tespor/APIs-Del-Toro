@@ -136,6 +136,8 @@ router.delete('/eliminar/:id', validateToken, async (req, res) => {
             });
         }
 
+       
+
         await existe.destroy();
         console.log(`CURSO CON EL ID: ${id} HA SIDO ELIMINADO`);
 
