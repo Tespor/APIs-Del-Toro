@@ -27,28 +27,32 @@ router.get('/ver', validateToken, async (req, res) => {
   }
 });
 
-router.get('/cursos/:id/alumnos', validateToken, async (req, res) => {
+router.get('/ver/:id/alumnos', validateToken, async (req, res) => {
   const cursoId = req.params.id;
 
   try {
-    const curso = await Curso.findByPk(cursoId, {
-      include: {
-        model: Alumno,
-        through: { attributes: [] }, // no mostrar tabla intermedia
-        attributes: ['matricula', 'nombre', 'apellidoP', 'apellidoM']
-      }
+    const [alumnos] = await sequelize.query(`
+      SELECT a.matricula, a.nombre, a.apellidoP, a.apellidoM
+      FROM alumnos AS a
+      INNER JOIN alumno_curso AS ca ON ca.matricula = a.matricula
+      INNER JOIN cursos AS c ON c.id = ca.curso_id
+      WHERE c.id = :cursoId
+    `, {
+      replacements: { cursoId },
+      type: sequelize.QueryTypes.SELECT
     });
 
-    if (!curso) {
-      return res.status(404).send({ message: 'Curso no encontrado' });
+    if (!alumnos || alumnos.length === 0) {
+      return res.status(404).send({ message: 'Curso no encontrado o sin alumnos' });
     }
 
-    res.send(curso.Alumnos);
+    res.send(alumnos);
   } catch (error) {
     console.log(error);
     return res.status(400).send({ message: error.message });
   }
 });
+
 
 
 
