@@ -1,7 +1,7 @@
 const express = require('express');
 const Curso = require('../models/curso.model');
 const Profesor = require('../models/profesor.model');
-const Alumno = require('../models/alumno.model');
+const Alumno_Curso = require('../models/alumno_curso.model');
 const router = express.Router();
 const validateToken = require('../utils/authenticateToken');
 const verifyPermissions = require('../utils/verifyPermissions');
@@ -43,7 +43,7 @@ router.get('/ver/:id/alumnos', validateToken, async (req, res) => {
     });
 
     if (!alumnos || alumnos.length === 0) {
-      return res.status(404).send({ message: 'Curso no encontrado o sin alumnos' });
+      return res.send([]);
     }
     res.send(alumnos);
 
@@ -69,7 +69,6 @@ router.get('/alumnos-no-inscritos/:id_curso', validateToken, async (req, res) =>
       replacements: { id_curso },
       type: sequelize.QueryTypes.SELECT
     });
-    console.log('si hay data:', alumnos);
     res.send(alumnos);
   } catch (error) {
     console.error('Error al obtener alumnos no inscritos:', error);
@@ -212,15 +211,12 @@ router.put('/editar/:id', validateToken, async (req, res) => {
 
 
 router.delete('/eliminar/:id', validateToken, async (req, res) => {
-
-
   const permissions = verifyPermissions(req, res);
   if (permissions != 1001 && permissions != 1101 && permissions != 1011 && permissions != 1111) {
     return res.send({
       message: 'NO TIENES PERMISO PARA ELIMINAR DATOS'
     });
   }
-
 
   try {
     const cursoId = req.params.id;
@@ -231,6 +227,12 @@ router.delete('/eliminar/:id', validateToken, async (req, res) => {
       return res.status(404).json({ error: 'Curso no encontrado' });
     }
 
+    // 1. Eliminar primero las relaciones en la tabla intermedia
+    await Alumno_Curso.destroy({
+      where: { curso_id: cursoId }
+    });
+
+    // 2. Eliminar el curso
     await curso.destroy();
 
     res.json({ mensaje: 'Curso eliminado correctamente' });
@@ -239,5 +241,6 @@ router.delete('/eliminar/:id', validateToken, async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
+
 
 module.exports = router;
