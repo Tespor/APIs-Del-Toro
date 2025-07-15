@@ -6,7 +6,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const SECRET_KEY = 'holaMundo';
 const verifyPermissions = require('../utils/verifyPermissions');
-const { Op} = require('sequelize');
+const { Op, where} = require('sequelize');
+const Curso = require('../models/curso.model');
 
 router.get('/buscar/:palabra', validateToken, async (req, res) => {
     const { palabra } = req.params;
@@ -112,8 +113,6 @@ router.put('/editar/:id', validateToken, async (req, res) => {
                 error: 'EL PROFESOR QUE DESEA ACTUALIZAR NO EXISTE'
             });
         }
-        const hash = await bcrypt.hash(new_data.password, 10);
-        new_data.password = hash;
         await profesor.update(new_data);
         console.log(`EL PROFESOR CON EL ID ${id} HA SIDO ACTUALIZADO`);
         return res.send({
@@ -150,6 +149,15 @@ router.delete('/eliminar/:id', validateToken, async (req, res) => {
                 error: 'EL PROFESOR QUE DESEA ELIMINAR NO EXISTE'
             });
         }
+
+        const existe_en_cursos = await Curso.findOne({where: {profesor_id : id}});
+
+        if(existe_en_cursos){
+             return res.status(404).send({
+                error: 'EL PROFESOR QUE DESEA ELIMINAR ESTA RELACIONADO A UN CURSO SI LO DESEA ELIMINAR PRIMERO ELIMINALO DEL CURSO'
+            });
+        }
+
         await existe.destroy();
         console.log(`PROFESOR CON EL ID : ${id} HA SIDO ELIMINADO `);
 

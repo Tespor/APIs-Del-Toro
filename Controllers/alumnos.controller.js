@@ -7,6 +7,7 @@ const bcrypt = require('bcryptjs');
 const { Op} = require('sequelize');
 const SECRET_KEY = 'holaMundo';
 const verifyPermissions = require('../utils/verifyPermissions');
+const Alumno_Curso = require('../models/alumno_curso.model');
 
 
 router.get('/buscar/:palabra', validateToken, async (req, res) => {
@@ -56,7 +57,6 @@ router.get('/ver', validateToken, async (req, res) => {
     }
 
 });
-
 
 router.post('/ingresar', validateToken,  async (req, res) => {
 
@@ -116,8 +116,6 @@ router.put('/editar/:matricula', validateToken, async (req, res) => {
                 message: 'EL ALUMNO QUE  DESEA ACTUALIZAR NO EXISTE'
             });
         }
-        const hash = await bcrypt.hash(new_data.password, 10);
-        new_data.password = hash;
         await alumno.update(new_data);
         console.log(`EL ESTUDIANTE CON LA MATRICULA : ${matricula} HA SIDO ACTUALIZADO`);
         return res.send({
@@ -154,6 +152,12 @@ router.delete('/eliminar/:matricula', validateToken, async (req, res) => {
             });
         }
 
+        const existe_en_curso = await Alumno_Curso.findOne({where : {matricula : matricula}});
+
+        if(existe_en_curso){
+            await existe_en_curso.destroy();
+        }
+
         await existe.destroy();
         console.log(`ALUMNO CON LA MATRICULA: ${matricula} HA SIDO ELIMINADO`);
 
@@ -171,36 +175,37 @@ router.delete('/eliminar/:matricula', validateToken, async (req, res) => {
     }
 });
 
-router.post('/login', async (req, res) => {
-    const { correo_electronico, password } = req.body;
 
-    if (!correo_electronico || !password) {
-        return res.status(400).json({ error: 'Email y contraseña son requeridos' });
-    }
+// router.post('/login', async (req, res) => {
+//     const { correo_electronico, password } = req.body;
 
-    const alumno = await Alumno.findOne({ where: { correo_electronico } });
+//     if (!correo_electronico || !password) {
+//         return res.status(400).json({ error: 'Email y contraseña son requeridos' });
+//     }
 
-    if (!alumno || !(await bcrypt.compare(password, alumno.password))) {
-        return res.status(401).json({ error: 'Credenciales inválidas' });
-    }
+//     const alumno = await Alumno.findOne({ where: { correo_electronico } });
 
-    const token = jwt.sign({
-        matricula : alumno.matricula , 
-        nombre : alumno.nombre , 
-        apellidoP : alumno.apellidoP,
-        apellidoM : alumno.apellidoM , 
-        correo_electronico : alumno.correo_electronico ,  
-        telefono : alumno.telefono,
-        password : alumno.password,
-        permissions: alumno.permissions
-    },
-    SECRET_KEY, {expiresIn: '1h'});
+//     if (!alumno || !(await bcrypt.compare(password, alumno.password))) {
+//         return res.status(401).json({ error: 'Credenciales inválidas' });
+//     }
 
-    res.json({
-        alumno : alumno,
-        token : token
-    });
-});
+//     const token = jwt.sign({
+//         matricula : alumno.matricula , 
+//         nombre : alumno.nombre , 
+//         apellidoP : alumno.apellidoP,
+//         apellidoM : alumno.apellidoM , 
+//         correo_electronico : alumno.correo_electronico ,  
+//         telefono : alumno.telefono,
+//         password : alumno.password,
+//         permissions: alumno.permissions
+//     },
+//     SECRET_KEY, {expiresIn: '1h'});
+
+//     res.json({
+//         alumno : alumno,
+//         token : token
+//     });
+// });
 
 
 module.exports = router;

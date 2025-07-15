@@ -31,8 +31,8 @@ router.get('/ver/:id/alumnos', validateToken, async (req, res) => {
   const cursoId = req.params.id;
 
   try {
-    const [alumnos] = await sequelize.query(`
-      SELECT a.matricula, a.nombre, a.apellidoP, a.apellidoM
+    const alumnos = await sequelize.query(`
+      SELECT a.matricula, a.nombre, a.apellidoP, a.apellidoM, ca.id
       FROM alumnos AS a
       INNER JOIN alumno_curso AS ca ON ca.matricula = a.matricula
       INNER JOIN cursos AS c ON c.id = ca.curso_id
@@ -45,16 +45,37 @@ router.get('/ver/:id/alumnos', validateToken, async (req, res) => {
     if (!alumnos || alumnos.length === 0) {
       return res.status(404).send({ message: 'Curso no encontrado o sin alumnos' });
     }
-
     res.send(alumnos);
+
   } catch (error) {
     console.log(error);
     return res.status(400).send({ message: error.message });
   }
 });
 
+router.get('/alumnos-no-inscritos/:id_curso', validateToken, async (req, res) => {
+  const id_curso = req.params.id_curso;
 
-
+  try {
+    const alumnos = await sequelize.query(`
+      SELECT a.matricula, a.nombre, a.apellidoP, a.apellidoM
+      FROM alumnos AS a
+      WHERE a.matricula NOT IN (
+        SELECT ac.matricula
+        FROM alumno_curso AS ac
+        WHERE ac.curso_id = :id_curso
+      )
+    `, {
+      replacements: { id_curso },
+      type: sequelize.QueryTypes.SELECT
+    });
+    console.log('si hay data:', alumnos);
+    res.send(alumnos);
+  } catch (error) {
+    console.error('Error al obtener alumnos no inscritos:', error);
+    res.status(500).send({ message: 'Error al obtener alumnos no inscritos', error });
+  }
+});
 
 router.get('/buscar/:palabra', validateToken, async (req, res) => {
   const { palabra } = req.params;
